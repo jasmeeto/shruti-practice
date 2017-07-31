@@ -2,7 +2,7 @@
   <div id="app">
     <h1>{{ msg }}</h1>
     <div v-for="note in notes">
-      <a @click="makeSound(note.value)" tabindex="note.id">{{ note.text }}</a>
+      <a class="unselectable" @click="makeSound(note.value)" tabindex="note.id">{{ note.text }}</a>
     </div >
   </div>
 </template>
@@ -54,7 +54,7 @@ export default {
     makeSound (fraction) {
       const freq = Tone.Frequency(this.base_note).toFrequency();
       var playFreq = Tone.Frequency((freq / fraction.den) * fraction.num)
-      this.synth.triggerAttackRelease(playFreq, "6n");
+      this.synth.triggerAttackRelease(playFreq, "4n");
     }
   }
 }
@@ -84,12 +84,23 @@ li {
   margin: 0 10px;
 }
 
+.unselectable {
+   -moz-user-select: -moz-none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+}
+
 $a-tags: 'a, a:active, a:hover, a:visited';
 $a-hover: 'a:active, a:hover';
 #{$a-tags} {
   color: hotpink;
   text-decoration: underline;
+  padding: 5px;
+  display:block;
 }
+
 #{$a-hover} {
   color: deeppink
 }
