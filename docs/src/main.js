@@ -15,7 +15,11 @@ new Vue({
   },
   computed: {
     ViewComponent () {
-      return routes[this.currentRoute] || NotFound
+      console.log(this.currentRoute)
+      return routes[this.currentRoute] ||
+             routes[this.currentRoute.replace('shruti-practice','')] ||
+             routes[this.currentRoute.replace('shruti-practice/','')] ||
+             NotFound
     }
   },
   render (h) { return h(this.ViewComponent) }

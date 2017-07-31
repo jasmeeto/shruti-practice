@@ -52,7 +52,6 @@ export default {
       this.synth = new Tone.Synth().toMaster();
     },
     makeSound (fraction) {
-      console.log(this.base_note);
       const freq = Tone.Frequency(this.base_note).toFrequency();
       var playFreq = Tone.Frequency((freq / fraction.den) * fraction.num)
       this.synth.triggerAttackRelease(playFreq, "6n");
