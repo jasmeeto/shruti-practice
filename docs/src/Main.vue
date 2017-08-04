@@ -3,7 +3,7 @@
     <h1>{{ msg }}</h1>
     <multiselect v-model="scale_selected" :options="scale_options" :multiple="false" group-values="notes" group-label="group" track-by="value" label="name"></multiselect>
     <div v-for="note in notes">
-      <a class="unselectable" @click="makeSound(note.value)" tabindex="note.id">{{ note.text }}</a>
+      <a class="unselectable" @click="makeSound(note.value)" @keyup.enter="makeSound(note.value)" :tabindex="note.id+1">{{ note.text }}</a>
     </div >
   </div>
 </template>
@@ -50,7 +50,7 @@ export default {
     }
     return {
       msg: 'Welcome to Shruti',
-      scale_selected: "C#",
+      scale_selected: {name:"C#", value: "C#4"},
       scale_options: scale_choices,
       notes: [
         {id: 0 , text: 'S',   value: {num: 1,   den: 1  }},
@@ -86,6 +86,7 @@ export default {
     },
     makeSound (fraction) {
       const freq = Tone.Frequency(this.scale_selected.value).toFrequency();
+      console.log(this.scale_selected);
       var playFreq = Tone.Frequency((freq / fraction.den) * fraction.num)
       this.synth.triggerAttackRelease(playFreq, "4n");
     }
@@ -94,6 +95,10 @@ export default {
 </script>
 
 <style lang="scss">
+$primary-color: hotpink;
+$secondary-color: deeppink;
+$tertiary-color: red;
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -128,14 +133,14 @@ li {
 $a-tags: 'a, a:active, a:hover, a:visited';
 $a-hover: 'a:active, a:hover';
 #{$a-tags} {
-  color: hotpink;
+  color: $primary-color;
   text-decoration: underline;
   padding: 7px;
   display:block;
 }
 
 #{$a-hover} {
-  color: deeppink
+  color: $secondary-color;
 }
 
 // MULTISELECT
@@ -157,7 +162,7 @@ $a-hover: 'a:active, a:hover';
   width: 1rem;
   height: 1rem;
   border-radius: 100%;
-  border-color: #41b883 transparent transparent;
+  border-color: $primary-color transparent transparent;
   border-style: solid;
   border-width: 2px;
   box-shadow: 0 0 0 1px transparent;
@@ -285,11 +290,11 @@ $a-hover: 'a:active, a:hover';
 }
 .multiselect__tag-icon:after {
   content: "\00D7";
-  color: #266d4d;
+  color: $secondary-color;
   font-size: 0.875rem;
 }
 .multiselect__tag-icon:focus, .multiselect__tag-icon:hover {
-  background: #369a6e;
+  background: $primary-color;
 }
 .multiselect__tag-icon:focus:after, .multiselect__tag-icon:hover:after {
   color: white;
@@ -390,7 +395,7 @@ $a-hover: 'a:active, a:hover';
   padding-left: 1.25rem;
 }
 .multiselect__option--highlight {
-  background: #41b883;
+  background: $primary-color;
   outline: none;
   color: white;
 }
