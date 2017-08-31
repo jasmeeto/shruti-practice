@@ -5,6 +5,15 @@
     <div v-for="note in notes">
       <a class="unselectable" @click="makeSound(note.value)" @keyup.enter="makeSound(note.value)" :tabindex="note.id+1">{{ note.text }}</a>
     </div >
+    <div> 
+      <a class="unselectable" @click="startPractice(120)">Start Practice</a>
+    </div>
+    <div> 
+      <a class="unselectable" @click="startPractice(60)">Start Slow Practice</a>
+    </div>
+    <div> 
+      <a class="unselectable" @click="stopPractice">Stop Practice</a>
+    </div>
   </div>
 </template>
 
@@ -88,7 +97,59 @@ export default {
       const freq = Tone.Frequency(this.scale_selected.value).toFrequency();
       console.log(this.scale_selected);
       var playFreq = Tone.Frequency((freq / fraction.den) * fraction.num)
+      Tone.Transport.bpm.value = 120;
       this.synth.triggerAttackRelease(playFreq, "4n");
+    },
+    startPractice(bpm = 120) {
+      if (this.loop !== undefined) {
+        this.loop.stop();
+      }
+      Tone.Transport.stop();
+      const freq = Tone.Frequency(this.scale_selected.value).toFrequency();
+
+      let set = new Set();
+      set.add("S");
+      set.add("R1");
+      set.add("G1");
+      set.add("M1");
+      set.add("P");
+      set.add("D1");
+      set.add("N1");
+      set.add("S\'");
+
+      let note;
+      let i;
+
+      var aroh = []
+      for (note in this.notes) {
+        i = this.notes[note];
+        if (set.has(i.text)) {
+          var playFreq = Tone.Frequency((freq / i.value.den) * i.value.num);
+          //this.synth.triggerAttackRelease(playFreq, "4n");
+          aroh.push(playFreq);
+
+        }
+      }
+
+      var sequence = aroh.slice();
+      var avroh = aroh.reverse();
+      sequence.push.apply(sequence,avroh);
+      console.log(sequence);
+
+      var _this = this;
+      this.loop = new Tone.Sequence(function(time, note) {
+          _this.synth.triggerAttackRelease(note, "8n");
+      }, sequence, "4n").start(0);
+
+
+      console.log("starting");
+      Tone.Transport.bpm.value = bpm;
+      Tone.Transport.start("+0.1");
+
+    },
+    stopPractice() {
+      this.loop.stop();
+      Tone.Transport.stop();
     }
   }
 }
