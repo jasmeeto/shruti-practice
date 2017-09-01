@@ -9,9 +9,10 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
-    "vue": "^2.3.3",
     "tone": "^0.10.0",
-    "vue-multiselect" : "^2.0.0"
+    "vue": "^2.3.3",
+    "vue-multiselect": "^2.0.0",
+    "vue-slider-component": "^2.3.9"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",

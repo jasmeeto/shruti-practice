@@ -16,13 +16,10 @@
       <a class="unselectable" @click="stopPractice">Stop Practice</a>
     </div>
     <div> 
-      <a class="unselectable" @click="startPractice(120)">Start Practice</a>
+      <a class="unselectable" @click="startPractice(bpmSelected)">Start Practice</a>
     </div>
     <div> 
-      <a class="unselectable" @click="startPractice(60)">Start Slow Practice</a>
-    </div>
-    <div> 
-      <a v-model="cycleWidth" class="unselectable" @click="startCyclePractice(cycleWidth)">Start Cycle Practice</a>
+      <a class="unselectable" @click="startCyclePractice(cycleWidth, bpmSelected)">Start Cycle Practice</a>
       <multiselect v-model="cycleWidth" :options="cycleOptions" :multiple="false"></multiselect>
     </div>
     <div>
@@ -43,6 +40,14 @@
                    label="text"
                    ></multiselect>
     </div>
+    <div>
+      <h2> {{bpmTitle}} </h2>
+      <vue-slider ref="slider"
+                  v-model="bpmSelected"
+                  v-bind="sliderConfig"
+                  @callback="updateBpm"
+                  ></vue-slider>
+    </div>
       
     </div>
     </div>
@@ -52,12 +57,13 @@
 <script>
 import Tone from 'tone'
 import Multiselect from 'vue-multiselect'
+import vueSlider from 'vue-slider-component'
 export default {
   name: 'main',
   created () {
     this.init()
   },
-  components: {Multiselect},
+  components: {Multiselect, vueSlider},
   data () {
     var notes_choices = [
       "C",
@@ -97,6 +103,15 @@ export default {
       msg: 'Welcome to Shruti',
       arohTitle: 'Aroh:',
       avrohTitle: 'Avroh:',
+      bpmTitle: 'BPM:',
+      bpmSelected: 60,
+      sliderConfig: {
+        min: 0,
+        max: 500,
+        interval: 20,
+        piecewise: true,
+        lazy: true
+      },
       cycleWidth: 3,
       cycleOptions: cycleOptions,
       arohSelected: [
@@ -155,7 +170,6 @@ export default {
     },
     makeSound (fraction) {
       const freq = Tone.Frequency(this.scale_selected.value).toFrequency();
-      console.log(this.scale_selected);
       var playFreq = Tone.Frequency((freq / fraction.den) * fraction.num)
       Tone.Transport.bpm.value = 120;
       this.synth.triggerAttackRelease(playFreq, "4n");
@@ -183,7 +197,6 @@ export default {
       });
 
       sequence.push.apply(sequence,avroh);
-      console.log(sequence);
 
       console.log("starting");
       Tone.Transport.bpm.value = bpm;
@@ -191,7 +204,7 @@ export default {
 
       var _this = this;
       this.loop = new Tone.Sequence(function(time, note) {
-          _this.synth.triggerAttackRelease(note, "8n");
+          _this.synth.triggerAttackRelease(note, "4n");
       }, sequence, "4n").start(0);
 
     },
@@ -252,15 +265,18 @@ export default {
           }
       }
    
-      console.log("starting");
       Tone.Transport.bpm.value = bpm;
       Tone.Transport.start();
 
       var _this = this;
       this.loop = new Tone.Sequence(function(time, note) {
-          _this.synth.triggerAttackRelease(note, "8n");
+          _this.synth.triggerAttackRelease(note, "4n");
       }, sequence, "4n").start(0);
     },
+    updateBpm(value) {
+      if (value == 0) return;
+      Tone.Transport.bpm.value = value;
+    }
   }
 }
 </script>
