@@ -1,10 +1,20 @@
 <template>
   <div id="app">
     <h1>{{ msg }}</h1>
-    <multiselect v-model="scale_selected" :options="scale_options" :multiple="false" group-values="notes" group-label="group" track-by="value" label="name"></multiselect>
+    <multiselect v-model="scale_selected"
+                 :options="scale_options"
+                 :multiple="false"
+                 group-values="notes"
+                 group-label="group"
+                 track-by="value"
+                 label="name"
+                 :close-on-select="true"></multiselect>
     <div v-for="note in notes">
       <a class="unselectable" @click="makeSound(note.value)" @keyup.enter="makeSound(note.value)" :tabindex="note.id+1">{{ note.text }}</a>
     </div >
+    <div> 
+      <a class="unselectable" @click="stopPractice">Stop Practice</a>
+    </div>
     <div> 
       <a class="unselectable" @click="startPractice(120)">Start Practice</a>
     </div>
@@ -12,7 +22,29 @@
       <a class="unselectable" @click="startPractice(60)">Start Slow Practice</a>
     </div>
     <div> 
-      <a class="unselectable" @click="stopPractice">Stop Practice</a>
+      <a v-model="cycleWidth" class="unselectable" @click="startCyclePractice(cycleWidth)">Start Cycle Practice</a>
+      <multiselect v-model="cycleWidth" :options="cycleOptions" :multiple="false"></multiselect>
+    </div>
+    <div>
+      <h2> {{arohTitle}} </h2>
+      <multiselect v-model="arohSelected"
+                   :options="notes"
+                   :multiple="true"
+                   track-by="id"
+                   label="text"
+                   ></multiselect>
+    </div>
+    <div>
+      <h2> {{avrohTitle}} </h2>
+      <multiselect v-model="avrohSelected"
+                   :options="notes"
+                   :multiple="true"
+                   track-by="id"
+                   label="text"
+                   ></multiselect>
+    </div>
+      
+    </div>
     </div>
   </div>
 </template>
@@ -57,8 +89,36 @@ export default {
       option["notes"] = currentScaleChoices;
       scale_choices.push(option);
     }
+    var cycleOptions = [];
+    for (var i = 0; i < 22; i++) {
+      cycleOptions.push(i+1);
+    }
     return {
       msg: 'Welcome to Shruti',
+      arohTitle: 'Aroh:',
+      avrohTitle: 'Avroh:',
+      cycleWidth: 3,
+      cycleOptions: cycleOptions,
+      arohSelected: [
+        {id: 0 , text: 'S',   value: {num: 1,   den: 1  }},
+        {id: 3 , text: 'R1',  value: {num: 10 , den: 9  }},
+        {id: 7 , text: 'G1',  value: {num: 5  , den: 4  }},
+        {id: 9 , text: 'M1',  value: {num: 4  , den: 3  }},
+        {id: 13, text: 'P',   value: {num: 3  , den: 2  }},
+        {id: 16, text: 'D1',  value: {num: 5  , den: 3  }},
+        {id: 20, text: 'N1',  value: {num: 15 , den: 8  }},
+        {id: 22, text: 'S\'', value: {num: 2  , den: 1  }}
+      ],
+      avrohSelected: [
+        {id: 22, text: 'S\'', value: {num: 2  , den: 1  }},
+        {id: 20, text: 'N1',  value: {num: 15 , den: 8  }},
+        {id: 16, text: 'D1',  value: {num: 5  , den: 3  }},
+        {id: 13, text: 'P',   value: {num: 3  , den: 2  }},
+        {id: 9 , text: 'M1',  value: {num: 4  , den: 3  }},
+        {id: 7 , text: 'G1',  value: {num: 5  , den: 4  }},
+        {id: 3 , text: 'R1',  value: {num: 10 , den: 9  }},
+        {id: 0 , text: 'S',   value: {num: 1,   den: 1  }}
+      ],
       scale_selected: {name:"C#", value: "C#4"},
       scale_options: scale_choices,
       notes: [
@@ -107,50 +167,100 @@ export default {
       Tone.Transport.stop();
       const freq = Tone.Frequency(this.scale_selected.value).toFrequency();
 
-      let set = new Set();
-      set.add("S");
-      set.add("R1");
-      set.add("G1");
-      set.add("M1");
-      set.add("P");
-      set.add("D1");
-      set.add("N1");
-      set.add("S\'");
-
       let note;
       let i;
 
-      var aroh = []
-      for (note in this.notes) {
-        i = this.notes[note];
-        if (set.has(i.text)) {
-          var playFreq = Tone.Frequency((freq / i.value.den) * i.value.num);
-          //this.synth.triggerAttackRelease(playFreq, "4n");
-          aroh.push(playFreq);
-
-        }
-      }
+      var aroh = this.arohSelected.map(function(el){
+          var playFreq = Tone.Frequency((freq / el.value.den) * el.value.num);
+          return playFreq;
+      });
 
       var sequence = aroh.slice();
-      var avroh = aroh.reverse();
+
+      var avroh = this.avrohSelected.map(function(el){
+          var playFreq = Tone.Frequency((freq / el.value.den) * el.value.num);
+          return playFreq;
+      });
+
       sequence.push.apply(sequence,avroh);
       console.log(sequence);
+
+      console.log("starting");
+      Tone.Transport.bpm.value = bpm;
+      Tone.Transport.start();
 
       var _this = this;
       this.loop = new Tone.Sequence(function(time, note) {
           _this.synth.triggerAttackRelease(note, "8n");
       }, sequence, "4n").start(0);
 
-
-      console.log("starting");
-      Tone.Transport.bpm.value = bpm;
-      Tone.Transport.start("+0.1");
-
     },
     stopPractice() {
       this.loop.stop();
       Tone.Transport.stop();
-    }
+    },
+    startCyclePractice(cycleWidth = 4, bpm = 120) {
+      if (cycleWidth > this.arohSelected.size  ||
+          cycleWidth > this.avrohSelected.size ) {
+        return undefined;
+      }
+
+      if (this.loop !== undefined) {
+        this.loop.stop();
+      }
+
+      Tone.Transport.stop();
+      const freq = Tone.Frequency(this.scale_selected.value).toFrequency();
+
+      let note;
+      let i;
+      var aroh = this.arohSelected.map(function(el){
+          var playFreq = Tone.Frequency((freq / el.value.den) * el.value.num);
+          return playFreq;
+      });
+
+      var sequence = [];
+
+      for (let i = 0; i < aroh.length; i++) {
+        if(i + cycleWidth > aroh.length){
+          break;
+        }
+
+        for (let k = 0; k < cycleWidth + 1; k++) {
+          for (let j = 0; j < cycleWidth; j++) {
+            let index = i + ((j + k) % (cycleWidth));
+            sequence.push(aroh[index]);
+          }
+        }
+
+      }
+
+      var avroh = this.avrohSelected.map(function(el){
+          var playFreq = Tone.Frequency((freq / el.value.den) * el.value.num);
+          return playFreq;
+      });
+      for (let i = 0; i < avroh.length; i++) {
+          if(i + cycleWidth > avroh.length){
+            break;
+          }
+
+          for (let k = 0; k < cycleWidth + 1; k++) {
+            for (let j = 0; j < cycleWidth; j++) {
+              let index = i + ((j + k) % (cycleWidth));
+              sequence.push(avroh[index]);
+            }
+          }
+      }
+   
+      console.log("starting");
+      Tone.Transport.bpm.value = bpm;
+      Tone.Transport.start();
+
+      var _this = this;
+      this.loop = new Tone.Sequence(function(time, note) {
+          _this.synth.triggerAttackRelease(note, "8n");
+      }, sequence, "4n").start(0);
+    },
   }
 }
 </script>
