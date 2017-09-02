@@ -55,7 +55,12 @@
          @keyup.enter="makeRandomSound">
          Make Random Sound
       </a>
-      <h3> {{actualNote}} </h3>
+      <a class="unselectable"
+         @click="revealRandomSound"
+         @keyup.enter="revealRandomSound">
+         Reveal
+      </a>
+      <h3 v-if="actualVisible"> {{actualNote}} </h3>
     </div>
     </div>
     </div>
@@ -114,6 +119,7 @@ export default {
       bpmTitle: 'BPM:',
       randomTitle: 'Random:',
       actualNote: 'Note Placeholder',
+      actualVisible: true,
       bpmSelected: 60,
       sliderConfig: {
         min: 0,
@@ -186,6 +192,7 @@ export default {
       this.synth.triggerAttackRelease(playFreq, "4n");
     },
     makeRandomSound () {
+      this.actualVisible = false;
       var allnotes = this.arohSelected.slice();
       allnotes.push.apply(allnotes,this.avrohSelected);
       var randomNote;
@@ -204,6 +211,9 @@ export default {
       }
       this.makeSound(randomNote.value);
       this.actualNote = randomNote.text;
+    },
+    revealRandomSound() {
+      this.actualVisible = true;
     },
     startPractice(bpm = 120) {
       if (this.loop !== undefined) {
