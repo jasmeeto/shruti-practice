@@ -48,7 +48,15 @@
                   @callback="updateBpm"
                   ></vue-slider>
     </div>
-      
+    <div>
+      <h2> {{randomTitle}} </h2>
+      <a class="unselectable"
+         @click="makeRandomSound"
+         @keyup.enter="makeRandomSound">
+         Make Random Sound
+      </a>
+      <h3> {{actualNote}} </h3>
+    </div>
     </div>
     </div>
   </div>
@@ -104,6 +112,8 @@ export default {
       arohTitle: 'Aroh:',
       avrohTitle: 'Avroh:',
       bpmTitle: 'BPM:',
+      randomTitle: 'Random:',
+      actualNote: 'Note Placeholder',
       bpmSelected: 60,
       sliderConfig: {
         min: 0,
@@ -167,12 +177,33 @@ export default {
     init () {
       console.log("Initializing...");
       this.synth = new Tone.Synth().toMaster();
+      this.prevRandom = undefined;
     },
     makeSound (fraction) {
       const freq = Tone.Frequency(this.scale_selected.value).toFrequency();
       var playFreq = Tone.Frequency((freq / fraction.den) * fraction.num)
-      Tone.Transport.bpm.value = 120;
+      Tone.Transport.bpm.value = this.bpmSelected;
       this.synth.triggerAttackRelease(playFreq, "4n");
+    },
+    makeRandomSound () {
+      var allnotes = this.arohSelected.slice();
+      allnotes.push.apply(allnotes,this.avrohSelected);
+      var randomNote;
+      for (;;) {
+         randomNote = allnotes[Math.floor(Math.random()*allnotes.length)];
+         if (this.prevRandom === undefined) {
+            this.prevRandom = randomNote.id;
+            break;
+         }
+         if (this.prevRandom == randomNote.id) {
+            continue;
+          }else{
+            this.prevRandom = randomNote.id;
+            break;
+          }
+      }
+      this.makeSound(randomNote.value);
+      this.actualNote = randomNote.text;
     },
     startPractice(bpm = 120) {
       if (this.loop !== undefined) {
