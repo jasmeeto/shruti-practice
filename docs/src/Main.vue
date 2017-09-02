@@ -60,7 +60,17 @@
          @keyup.enter="revealRandomSound">
          Reveal
       </a>
-      <h3 v-if="actualVisible"> {{actualNote}} </h3>
+      <h3 v-if="actualVisible"
+         class="unselectable"
+         @click="makeSound(actualNote.value)"
+         @keyup.enter="makeSound(actualNote.value)">
+         {{actualNote.text}}
+      </h3>
+      <h3 v-else="actualVisible"
+         class="unselectable"
+         >
+         &nbsp;
+      </h3>
     </div>
     </div>
     </div>
@@ -192,6 +202,12 @@ export default {
       this.synth.triggerAttackRelease(playFreq, "4n");
     },
     makeRandomSound () {
+      if (!this.actualVisible) {
+        if (this.prevRandom !== undefined) {
+          this.makeSound(this.prevRandom.value)
+          return;
+        } 
+      }
       this.actualVisible = false;
       var allnotes = this.arohSelected.slice();
       allnotes.push.apply(allnotes,this.avrohSelected);
@@ -199,18 +215,18 @@ export default {
       for (;;) {
          randomNote = allnotes[Math.floor(Math.random()*allnotes.length)];
          if (this.prevRandom === undefined) {
-            this.prevRandom = randomNote.id;
+            this.prevRandom = randomNote;
             break;
          }
-         if (this.prevRandom == randomNote.id) {
+         if (this.prevRandom.id == randomNote.id) {
             continue;
           }else{
-            this.prevRandom = randomNote.id;
+            this.prevRandom = randomNote;
             break;
           }
       }
       this.makeSound(randomNote.value);
-      this.actualNote = randomNote.text;
+      this.actualNote = randomNote;
     },
     revealRandomSound() {
       this.actualVisible = true;
