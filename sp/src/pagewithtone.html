@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width"> 
+    <meta name="theme-color" content="#F660AB">
+    <script type="text/javascript" src="Tone.min.js"></script>
+    <script type="text/javascript" src="WebviewBridge.js"></script>
+    <title>shruti-practice</title>
+  </head>
+  <body>
+    <div id="app">test</div>
+  </body>
+  <script>
+    document.onreadystatechange = () => {
+        if (document.readyState === 'complete') {
+            window.synth = new Tone.Synth().toMaster();
+            Tone.Transport.bpm.value = 120;
+
+            window.webViewBridge.send('initTone', window.counter, note => {
+            }, (err) => {console.err(err); });
+
+            window.webViewBridge.addNamedCallback("playTone", note => {
+              const freq = Tone.Frequency(note).toFrequency();
+              window.synth.triggerAttackRelease(freq, "4n");
+            })
+        }
+    };
+  </script>
+</html>
