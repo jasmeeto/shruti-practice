@@ -28,6 +28,9 @@
     },
     "packagerOpts": {
       "config": "rn-cli.config.js"
+    },
+    "android": {
+      "package": "com.jasoberai.sp"
     }
   }
 }
