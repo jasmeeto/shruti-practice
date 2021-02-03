@@ -79,6 +79,7 @@
 
 <script>
 import Tone from 'tone'
+import StartAudioContext from 'startaudiocontext'
 import Multiselect from 'vue-multiselect'
 import vueSlider from 'vue-slider-component'
 export default {
@@ -192,6 +193,7 @@ export default {
   methods: {
     init () {
       console.log("Initializing...");
+      StartAudioContext(Tone.context);
       this.synth = new Tone.Synth().toMaster();
       this.prevRandom = undefined;
     },
